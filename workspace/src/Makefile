@@ -20,12 +20,12 @@ H8WRITE = ../../tools/h8write/h8write
 H8WRITE_SERDEV = /dev/cuad0
 
 OBJS  = vector.o startup.o main.o
-OBJS += lib.o serial.o
+OBJS += lib.o serial.o xmodem.o
 
 TARGET = kzload
 
 CFLAGS = -Wall -mh -nostdinc -nostdlib -fno-builtin
-#CFLAGS += -mint32 # int??32?ӥåȤˤ????ȳݻ????任???Ǥ??ʤ??ʤ?
+#CFLAGS += -mint32 # cann't multiple div
 CFLAGS += -I.
 #CFLAGS += -g
 CFLAGS += -Os

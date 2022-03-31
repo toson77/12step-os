@@ -32,10 +32,10 @@ struct h8_3069f_sci {
 #define H8_3069F_SCI_SCR_CKE1   (1<<1)
 #define H8_3069F_SCI_SCR_TEIE   (1<<2)
 #define H8_3069F_SCI_SCR_MPIE   (1<<3)
-#define H8_3069F_SCI_SCR_RE     (1<<4) /* ????Í­?? */
-#define H8_3069F_SCI_SCR_TE     (1<<5) /* ????Í­?? */
-#define H8_3069F_SCI_SCR_RIE    (1<<6) /* ?õ¿®³?????Í­?? */
-#define H8_3069F_SCI_SCR_TIE    (1<<7) /* ?÷¿®³?????Í­?? */
+#define H8_3069F_SCI_SCR_RE     (1<<4)
+#define H8_3069F_SCI_SCR_TE     (1<<5)
+#define H8_3069F_SCI_SCR_RIE    (1<<6)
+#define H8_3069F_SCI_SCR_TIE    (1<<7)
 
 #define H8_3069F_SCI_SSR_MPBT   (1<<0)
 #define H8_3069F_SCI_SSR_MPB    (1<<1)
@@ -43,48 +43,60 @@ struct h8_3069f_sci {
 #define H8_3069F_SCI_SSR_PER    (1<<3)
 #define H8_3069F_SCI_SSR_FERERS (1<<4)
 #define H8_3069F_SCI_SSR_ORER   (1<<5)
-#define H8_3069F_SCI_SSR_RDRF   (1<<6) /* ?õ¿®´?Î» */
-#define H8_3069F_SCI_SSR_TDRE   (1<<7) /* ?÷¿®´?Î» */
+#define H8_3069F_SCI_SSR_RDRF   (1<<6)
+#define H8_3069F_SCI_SSR_TDRE   (1<<7)
 
 static struct {
   volatile struct h8_3069f_sci *sci;
 } regs[SERIAL_SCI_NUM] = {
-  { H8_3069F_SCI0 }, 
-  { H8_3069F_SCI1 }, 
-  { H8_3069F_SCI2 }, 
+  { H8_3069F_SCI0 },
+  { H8_3069F_SCI1 },
+  { H8_3069F_SCI2 },
 };
 
-/* ?Ç¥Ð¥????????? */
 int serial_init(int index)
 {
   volatile struct h8_3069f_sci *sci = regs[index].sci;
 
   sci->scr = 0;
   sci->smr = 0;
-  sci->brr = 64; /* 20MHz?Î¥????Ã¥?????9600bps??À¸À®(25MHz?Î¾?????80?Ë¤???) */
-  sci->scr = H8_3069F_SCI_SCR_RE | H8_3069F_SCI_SCR_TE; /* ???õ¿®²?Ç½ */
+  sci->brr = 64; /* 20MHz 9600bps*/
+  sci->scr = H8_3069F_SCI_SCR_RE | H8_3069F_SCI_SCR_TE;
   sci->ssr = 0;
 
   return 0;
 }
 
-/* ?÷¿®²?Ç½???? */
 int serial_is_send_enable(int index)
 {
   volatile struct h8_3069f_sci *sci = regs[index].sci;
   return (sci->ssr & H8_3069F_SCI_SSR_TDRE);
 }
 
-/* ??Ê¸?????? */
 int serial_send_byte(int index, unsigned char c)
 {
   volatile struct h8_3069f_sci *sci = regs[index].sci;
 
-  /* ?÷¿®²?Ç½?Ë¤Ê¤??Þ¤??Ô¤? */
   while (!serial_is_send_enable(index))
     ;
   sci->tdr = c;
-  sci->ssr &= ~H8_3069F_SCI_SSR_TDRE; /* ?÷¿®³??? */
+  sci->ssr &= ~H8_3069F_SCI_SSR_TDRE;
 
   return 0;
+}
+
+int serial_is_recv_enable(int index) {
+  volatile struct h8_3069f_sci *sci = regs[index].sci;
+  return (sci->ssr & H8_3069F_SCI_SSR_RDRF);
+}
+
+unsigned char serial_recv_byte(int index) {
+  volatile struct h8_3069f_sci *sci = regs[index].sci;
+  unsigned c;
+
+  while(!serial_is_recv_enable(index));
+
+  c = sci->rdr;
+  sci->ssr &= ~H8_3069F_SCI_SSR_RDRF; /* fin receive */
+  return c;
 }
