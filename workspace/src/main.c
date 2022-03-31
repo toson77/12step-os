@@ -65,7 +65,10 @@ int main(void)
       putxval(size, 0);
       puts("\n");
       dump(loadbuf, size);
-    } else {
+    } else if(!strcmp(buf, "run")) {
+      elf_load(loadbuf);
+    }
+    else {
       puts("unknown. \n");
     }
   }
