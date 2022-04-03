@@ -1,0 +1,27 @@
+#include "defines.h"
+#include "intr.h"
+#include "interrupt.h"
+
+/*init interrupt vect  */
+int softvec_init(void)
+{
+  int type;
+  for(type = 0; type < SOFTVEC_TYPE_NUM; type++)
+    softvec_setinitr(type,NULL);
+  return 0;
+}
+/*setting interrupt vec */
+int softvec_setinitr(softvec_type_t type, softvec_handler_t handler)
+{
+  SOFTVECS[type] = handler;
+  return 0;
+}
+
+/* common interrupt handler */
+void interrupt(softvec_type_t type, unsigned long sp)
+{
+  softvec_handler_t handler = SOFTVECS[type];
+  if (handler)
+    handler(type,sp);
+}
+
