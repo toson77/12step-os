@@ -25,16 +25,15 @@ static void intr(softvec_type_t type, unsigned long sp)
   }
 }
 
+static int start_threads(int argc, char *argv[])
+{
+  kz_run(test08_1_main, "command", 0x100, 0, NULL);
+  return 0;
+}
+
 int main() {
   INTR_DISABLE;
   puts("kozos boot succeed!\n");
-  softvec_setintr(SOFTVEC_TYPE_SERINTR, intr);
-  serial_intr_recv_enable(SERIAL_DEFAULT_DEVICE);
-
-  puts("> ");
-  INTR_ENABLE;
-  while(1) {
-    asm volatile ("sleep");
-  }
-  return 0;
+  kz_start(start_threads, "start", 0x100, 0, NULL);
+ return 0;
 }
