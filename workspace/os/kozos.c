@@ -5,6 +5,7 @@
 #include "lib.h"
 
 #define THREAD_NUM 6
+#define PRIORITY_NUM 16
 #define THREAD_NAME_SIZE 15
 
 typedef struct _kz_context {
@@ -14,7 +15,10 @@ typedef struct _kz_context {
 typedef struct _kz_thread {
   struct _kz_thread *next;
   char name[THREAD_NAME_SIZE + 1];
+  int priority;
   char *stack;
+  uint32 flags;
+  #define KZTHREAD_FLAG_READY (1 << 0)
   struct {
     kz_func_t func;
     int argc;
@@ -25,7 +29,7 @@ typedef struct _kz_thread {
     kz_syscall_param_t *param;
   } syscall;
   kz_context context;
-} kz_thread;
+} kz_thread[PRIORITY_NUM];
 
 static struct {
   kz_thread *head;
@@ -44,10 +48,15 @@ static int getcurrent(void)
     return -1;
   }
 
-  readyque.head = current->next;
-  if(readyque.head == NULL) {
-    readyque.tail = NULL;
+  if(!(current->flags & KZ_THREAD_FLAG_READY)) {
+    return 1;
   }
+
+  readyque[current->priority].head = current->next;
+  if(readyque[current->priority].head == NULL) {
+    readyque[current->priority].tail = NULL;
+  }
+  current->flags &= ~KZ_THREAD_FLAG_READY;
   current->next = NULL;
   return 0;
 }
@@ -58,12 +67,17 @@ static int putcurrent(void)
     return -1;
   }
 
-  if (readyque.tail) {
-    readyque.tail->next = current;
-  } else {
-    readyque.head = current;
+  if(current->flags & KZ_THREAD_FLAG_READY) {
+    return 1;
   }
-  readyque.tail = current;
+
+  if(readyque[current->priority].tail) {
+    readyque[current->priority].tail->next = current;
+  } else {
+    readyque[current->priority].head = current;
+  }
+  readyque[current->priority].tail = current;
+  current->flags |= KZ_THREAD_FLAG_READY;
   return 0;
 }
 
