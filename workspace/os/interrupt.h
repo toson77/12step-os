@@ -17,7 +17,7 @@ typedef void (*softvec_handler_t) (softvec_type_t type, unsigned long sp);
 int softvec_init(void);
 
 /*setting initerrupt vect*/
-int softvec_setinitr(softvec_type_t type, softvec_handler_t handler);
+int softvec_setintr(softvec_type_t type, softvec_handler_t handler);
 
 /* common handler */
 void initerrupt (softvec_type_t type, unsigned long sp);

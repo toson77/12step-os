@@ -13,7 +13,7 @@ int test08_1_main(int argc, char *argv[])
     if(!strncmp(buf, "echo", 4)) {
       puts(buf + 4);
       puts("\n");
-    } else if (!strncmp(buf, "exit")) {
+    } else if (!strcmp(buf, "exit")) {
       break;
     } else {
       puts("unknown. \n");

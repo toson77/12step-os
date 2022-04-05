@@ -34,7 +34,7 @@ static struct {
 
 static kz_thread *current;
 static kz_thread threads[THREAD_NUM];
-static kz_handlers[SOFTVEC_TYPE_NUM];
+static kz_handler_t handlers[SOFTVEC_TYPE_NUM];
 
 void dispatch(kz_context *context);
 
@@ -54,7 +54,7 @@ static int getcurrent(void)
 
 static int putcurrent(void)
 {
-  if (current = NULL) {
+  if (current == NULL) {
     return -1;
   }
 
@@ -206,7 +206,7 @@ void kz_start(kz_func_t func, char *name, int stacksize, int argc, char *argv[])
 
   setintr(SOFTVEC_TYPE_SYSCALL, syscall_intr);
   setintr(SOFTVEC_TYPE_SOFTERR, softerr_intr);
-  current = (kzthread*)thread_run(func, name, stacksize, argc, argv);
+  current = (kz_thread*)thread_run(func, name, stacksize, argc, argv);
 
   dispatch(&current->context);
 }
